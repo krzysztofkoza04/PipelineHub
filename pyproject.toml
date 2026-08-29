@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipelinehub"
+version = "0.1.0"
+description = "Backend platform for creating, executing and monitoring data processing pipelines."
+requires-python = ">=3.14"
+
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx"
+]
+
+[tool.setuptools]
+packages = ["app"]
