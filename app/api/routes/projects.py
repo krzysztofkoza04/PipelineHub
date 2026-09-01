@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -48,3 +48,37 @@ def list_projects(
 
     return db.scalars(statement).all()
 
+@router.get(
+    "/{project_id}",
+    response_model=ProjectRead,
+)
+def get_project(
+    project_id:int,
+    db:Session=Depends(get_db),
+
+):
+    project = db.get(Project,project_id)
+    if project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found",
+        )
+    return project
+
+@router.delete(
+    "/{project_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+
+)
+def delete_project(
+    project_id:int,
+    db:Session=Depends(get_db),
+):
+    project = db.get(Project,project_id)
+    if project is None:
+        raise HTTPExceeption(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Projeect not found",
+        )
+    db.delete(project)
+    db.commit()

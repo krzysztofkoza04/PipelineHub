@@ -1,10 +1,16 @@
 from datetime import datetime
 
-from pydantic import BaseModel,  ConfigDict
+from pydantic import BaseModel,  ConfigDict,  Field
 
 class ProjectCreate(BaseModel):
-    name: str
-    description : str | None=None
+    name: str = Field(
+        min_length=3,
+        max_length=200,
+    )
+    description : str | None= Field(
+        default=None,
+        max_length=1000,
+    )
 
 
 class ProjectRead(BaseModel):
