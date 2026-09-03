@@ -21,4 +21,17 @@ class ProjectRead(BaseModel):
 
     model_config=ConfigDict(form_attributes=True)
 
+
+
+class ProjectUpdate(BaseModel):
+    name : str | None = Field(
+        default=None,
+        min_length=3,
+        max_length=200,
+    )
+    description: str | None  = Field(
+        default=None,
+        max_length=1800,
+    )
+
     
