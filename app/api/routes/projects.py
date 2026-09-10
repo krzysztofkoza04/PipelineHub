@@ -1,16 +1,33 @@
 from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.models.project import Project
 from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
+from app.services import projects as project_service
+from app.models.project import Project
 
 router = APIRouter(
     prefix="/projects",
     tags=["projects"],
 )
 
+
+def get_project_or_404(
+        db: Session,
+        project_id:int,
+
+) -> Project:
+    project=project_service.get_project_by_id(
+        db=db,
+        project_id=project_id,
+    )
+
+    if project is None:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail="Project not found",
+        )
+    return project
 
 
 @router.post(
@@ -23,16 +40,11 @@ def create_project(
     payload: ProjectCreate,
     db: Session = Depends(get_db),
 ):
-    project = Project(
-        name=payload.name,
-        description=payload.description,
+    return project_service.create_project(
+        db=db,
+        payload=payload,
     )
-
-    db.add(project)
-    db.commit()
-    db.refresh(project)
-
-    return project
+    
 
 @router.get(
     "",
@@ -44,9 +56,9 @@ def list_projects(
 
     db:Session = Depends(get_db),
 ):
-    statement = select(Project).order_by(Project.id)
+    return project_service.list_project(db)
 
-    return db.scalars(statement).all()
+
 
 @router.get(
     "/{project_id}",
@@ -57,13 +69,12 @@ def get_project(
     db:Session=Depends(get_db),
 
 ):
-    project = db.get(Project,project_id)
-    if project is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Project not found",
-        )
-    return project
+    return get_project_or_404(
+        db=db,
+        project_id=project_id,
+    )
+
+
 
 @router.delete(
     "/{project_id}",
@@ -74,15 +85,17 @@ def delete_project(
     project_id:int,
     db:Session=Depends(get_db),
 ):
-    project = db.get(Project,project_id)
-    if project is None:
-        raise HTTPExceeption(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Projeect not found",
-        )
-    db.delete(project)
-    db.commit()
+    project = get_project_or_404(
+        db=db,
+        project_id=project_id,
+    )
+    
+    project_service.delete_project(
+        db=db,
+        project=project,
+    )
 
+    
 
 
 @router.patch(
@@ -94,20 +107,13 @@ def update_project(
     payload: ProjectUpdate,
     db: Session = Depends(get_db),
 ):
-    project = db.get(Project, project_id)
+    project = get_project_or_404(
+        db=db,
+        project_id=project_id,
+    )
 
-    if project is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Project not found",
-        )
-
-    update_data = payload.model_dump(exclude_unset=True)
-
-    for field, value in update_data.items():
-        setattr(project, field, value)
-
-    db.commit()
-    db.refresh(project)
-
-    return project
+    return project_service.update_project(
+        db=db,
+        project=project,
+        payload=payload,
+    )
