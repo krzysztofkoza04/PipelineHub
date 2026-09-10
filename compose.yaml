@@ -14,5 +14,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  postgres_test:
+    image: postgres:17
+    container_name: pipelinehub_postgres_test
+
+    environment:
+      POSTGRES_DB: pipelinehub_test
+      POSTGRES_USER: pipelinehub
+      POSTGRES_PASSWORD: pipelinehub
+
+    ports:
+      - "5433:5432"
+
+
 volumes:
   postgres_data:
