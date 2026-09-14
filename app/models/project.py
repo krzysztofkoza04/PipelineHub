@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.data_source import DataSource
 
 
 class Project(Base):
@@ -28,3 +29,8 @@ class Project(Base):
         server_default=func.now(),
         nullable=False,
     )
+
+    data_sources: Mapped[list["DataSource"]] = relationship(
+    back_populates="project",
+    cascade="all, delete-orphan",
+   )

@@ -56,7 +56,7 @@ def list_projects(
 
     db:Session = Depends(get_db),
 ):
-    return project_service.list_project(db)
+    return project_service.list_projects(db)
 
 
 

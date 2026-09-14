@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from app.api.routes.projects import router as projects_router    
 
+from app.api.routes.data_sources import router as data_sources_router
+from app.api.routes.projects import router as projects_router
 
 
 app = FastAPI(
@@ -10,7 +11,7 @@ app = FastAPI(
 
 )
 app.include_router(projects_router)
-
+app.include_router(data_sources_router)
 
 @app.get("/")
 def root():
