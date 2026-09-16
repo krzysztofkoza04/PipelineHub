@@ -2,6 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import DateTime, Enum as SqlEnum, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app.core.enums import SourceType
 from app.db.base import Base
@@ -36,7 +37,13 @@ class DataSource(Base):
         ],
     ),
     nullable=False,
-)
+    )
+    config : Mapped[dict] = mapped_column(
+        JSONB,
+        nullable=False,
+        default=  dict,
+        server_default="{}",
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

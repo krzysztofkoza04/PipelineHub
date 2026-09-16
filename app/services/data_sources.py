@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models.data_source import DataSource
 from app.schemas.data_source import DataSourceCreate, DataSourceUpdate
+from app.schemas.source_config import validate_source_config
 
 
 def create_data_source(
@@ -10,10 +11,17 @@ def create_data_source(
     project_id: int,
     payload: DataSourceCreate,
 ) -> DataSource:
+
+    validated_config = validate_source_config(
+        source_type=payload.source_type,
+        config=payload.config,
+    )
+
     data_source = DataSource(
         project_id=project_id,
         name=payload.name,
         source_type=payload.source_type,
+        config=validated_config,
     )
 
     db.add(data_source)

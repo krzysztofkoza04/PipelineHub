@@ -66,11 +66,17 @@ def create_data_source(
 ):
     ensure_project_exists(db=db, project_id=project_id)
 
-    return data_source_service.create_data_source(
-        db=db,
-        project_id=project_id,
-        payload=payload,
-    )
+    try:
+        return data_source_service.create_data_source(
+            db=db,
+            project_id=project_id,
+            payload=payload,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
 
 
 @router.get(

@@ -27,6 +27,9 @@ def create_data_source(
         json={
             "name": "Test Source",
             "source_type": "csv",
+            "config": {
+                "path": "/data/test.csv",
+            },
         },
     )
 
@@ -42,7 +45,10 @@ def test_create_data_source(client: TestClient):
         json={
             "name": "Sales CSV",
             "source_type": "csv",
-        },
+            "config": {
+                "path": "/data/sales.csv",
+            },
+        }
     )
 
     assert response.status_code == 201
@@ -64,6 +70,9 @@ def test_list_data_sources(client: TestClient):
         json={
             "name": "CSV Source",
             "source_type": "csv",
+            "config": {
+                "path": "/data/file.csv",
+            },
         },
     )
 
@@ -72,6 +81,10 @@ def test_list_data_sources(client: TestClient):
         json={
             "name": "API Source",
             "source_type": "api",
+            "config": {
+                "url": "https://example.com/data",
+                "method": "GET",
+            },
         },
     )
 
@@ -232,3 +245,90 @@ def test_list_projects(client: TestClient):
     assert len(data) == 2
     assert data[0]["name"] == "Project One"
     assert data[1]["name"] == "Project Two"
+
+
+def test_create_data_source_with_config(client : TestClient):
+    project_id = create_project(client)
+
+    response = client.post(
+        f"/projects/{project_id}/data-sources",
+        json={
+            "name":"Sales CSV",
+            "source_type":"csv",
+            "config": {
+                "path": "/data/sales.csv",
+                "delimiter":",",
+                "encoding":"utf-8",
+            },
+        },
+    )
+
+    assert response.status_code ==201
+
+    data = response.json()
+
+    assert data["config"]["path"]=="/data/sales.csv"
+    assert data["config"]["delimiter"] == ","
+    assert data["config"]["encoding"]=='utf-8'
+
+def test_update_data_source_config(client : TestClient):
+    project_id= create_project(client)
+    data_source = create_data_source(client, project_id)
+
+    response =  client.patch(
+        f"/projects/{project_id}/data-sources/{data_source["id"]}",
+        json ={
+            "config": {
+                "path" : "/data/updated.csv"
+            }
+        },
+    )
+
+    assert response.status_code ==200
+    assert response.json()["config"] == {
+        "path" : "/data/updated.csv"
+    }
+
+def test_csv_source_rejects_invalid_config(
+        client : TestClient,
+):
+
+    project_id = create_project(client)
+
+    response = client.post(
+        f"/projects/{project_id}/data-sources",
+        json={
+            "name":"Bad CSV",
+            "source_type":"csv",
+            "config":{
+                "host":"localhost",
+                "port":5432,
+            },
+        },
+    )
+    assert response.status_code==422
+
+
+def test_api_source_accepts_api_config(
+        client:TestClient,
+
+):
+    project_id=create_project(client)
+    response = client.post(
+        f"/projects/{project_id}/data-sources",
+        json={
+            "name": "Currency API",
+            "source_type": "api",
+            "config": {
+                "url": "https://example.com/rates",
+                "method": "GET",
+            },
+        },
+    )
+
+    assert response.status_code ==201
+    data = response.json()
+
+    assert data["source_type"] == "api"
+    assert data["config"]["url"] == "https://example.com/rates"
+    assert data["config"]["method"] == "GET"
