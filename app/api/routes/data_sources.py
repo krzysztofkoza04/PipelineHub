@@ -74,7 +74,7 @@ def create_data_source(
         )
     except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         ) from exc
 
@@ -131,11 +131,18 @@ def update_data_source(
         data_source_id=data_source_id,
     )
 
-    return data_source_service.update_data_source(
-        db=db,
-        data_source=data_source,
-        payload=payload,
-    )
+    try:
+        return data_source_service.update_data_source(
+            db=db,
+            data_source=data_source,
+            payload=payload,
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from exc
 
 
 @router.delete(

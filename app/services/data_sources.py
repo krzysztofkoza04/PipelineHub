@@ -64,6 +64,25 @@ def update_data_source(
 ) -> DataSource:
     update_data = payload.model_dump(exclude_unset=True)
 
+    if (
+        "source_type" in update_data
+        and "config" not in update_data
+    ):
+        raise ValueError(
+            "Changing source type requires a new config"
+        )
+
+    source_type=update_data.get(
+        "source_type",
+        data_source.source_type,
+    )
+
+    if "config" in update_data:
+        validated_config = validate_source_config(
+            source_type=source_type,
+            config=update_data["config"],
+        )
+        
     for field, value in update_data.items():
         setattr(data_source, field, value)
 

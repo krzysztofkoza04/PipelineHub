@@ -332,3 +332,74 @@ def test_api_source_accepts_api_config(
     assert data["source_type"] == "api"
     assert data["config"]["url"] == "https://example.com/rates"
     assert data["config"]["method"] == "GET"
+
+def test_change_type_requires_new_config(
+        client : TestClient,
+
+):
+    project_id =create_project(client)
+    data_source = create_data_source(
+        client,
+        project_id,
+    )
+
+    response = client.patch(
+        f"/projects/{project_id}/data-sources/{data_source["id"]}",
+        json={
+            "source_type":"api",
+        },
+    )
+
+    assert response.status_code == 422
+
+    assert response.json() == {
+       "detail": "Changing source type requires a new config"
+    }
+
+def test_change_csv_source_to_api(
+    client: TestClient,
+):
+    project_id=create_project(client)
+    data_source=create_data_source(
+        client,
+        project_id,
+    )
+
+    response =client.patch(
+        f"/projects/{project_id}/data-sources/{data_source["id"]}",
+        json={
+            "source_type":"api",
+            "config" : {
+                "url" : "https://example.com/data",
+                "method": "GET",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+
+    data= response.json()
+
+    assert data["source_type"] =="api"
+    assert data["config"]["url"]=="https://example.com/data"
+    assert data["config"]["method"]=="GET"
+
+def test_update_data_source_rejects_invalid_config(
+    client: TestClient,
+):
+    project_id=create_project(client)
+    data_source=create_data_source(
+        client,
+        project_id,
+    )
+
+    response =client.patch(
+        f"/projects/{project_id}/data-sources/{data_source["id"]}",
+        json={
+            "config":{
+                "host": "localhost",
+            },
+        },
+    )
+
+    assert response.status_code ==422
