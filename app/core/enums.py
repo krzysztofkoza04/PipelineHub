@@ -6,3 +6,10 @@ class SourceType(str, Enum):
     JSON = "json"
     API = "api"
     POSTGRESQL = "postgresql"
+
+
+class PipelineStatus(str, Enum):
+    DRAFT = "draft"
+    ACTIVE = "active"
+    PAUSED = "paused"
+    ARCHIVED = "archived"

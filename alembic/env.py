@@ -7,7 +7,7 @@ from alembic import context
 
 from app.core.config import settings
 from app.db.base import Base
-from app.models import DataSource, Project
+from app.models import DataSource, Project,Pipeline
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
